@@ -61,4 +61,4 @@ onMounted(() => {
   width: 180px;
   display: flex;
 }
-</style>              
+</style>
