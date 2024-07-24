@@ -1,51 +1,94 @@
 <template>
-  <div class="container">
+  <div class="container-fluid">
     <div class="row">
       <div class="col-lg-12">
         <h2 class="text-center my-4">RIWAYAT KUNJUNGAN</h2>
         <div class="my-3">
-          <input type="search" class="form-control form-control-lg rounded-5" placeholder="fillter..." />
+          <form @submit.prevent="getPengunjung">
+            <input v-model="keyword" type="serch" class="form-conrol form-control-lg rounded-5" placeholder="Mencari..." />
+          </form>
         </div>
-        <div class="my-3 text-muted">menampilkan 1 dari 1</div>
+        <div class="my-3">Menampilkan {{ visitors.length }} Dari {{ Semua }}</div>
         <table class="table">
           <thead>
             <tr>
-              <td>NO</td>
-              <td>NAMA</td>
-              <td>KEANGGOTAAN</td>
-              <td>WAKTU</td>
-              <td>KEPERLUAN</td>
+              <td>No</td>
+              <td>Tanggal/Waktu</td>
+              <td>Nama</td>
+              <td>Keanggotaan</td>
+              <td>Tingkat</td>
+              <td>Jurusan</td>
+              <td>Kelas</td>
+              <td>Keperluan</td>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(visitor, i) in Visitors" :key="i">
-              <td>{{ i + 1 }}</td>
+            <tr v-for="(visitor, i) in visitors" :key="i">
+              <td>{{ i + 1 }}.</td>
+              <td>{{ visitor.tanggal }}, {{ visitor.waktu }}</td>
               <td>{{ visitor.nama }}</td>
               <td>{{ visitor.keanggotaan.nama }}</td>
-              <td>{{ visitor.tanggal }}</td>
+              <td>{{ visitor.tingkat }}</td>
+              <td>{{ visitor.jurusan }}</td>
+              <td>{{ visitor.kelas }}</td>
               <td>{{ visitor.keperluan.nama }}</td>
             </tr>
           </tbody>
-        </table>
+        </table>      
+       <NuxtLink to="/">
+          <button type="submit" class="btn btn-dark btn-lg rounded-5 px-5">Menu</button>
+        </NuxtLink>
       </div>
     </div>
-    <NuxtLink to="pengunjung/tambah">
-      <button type="button" class="btn btn-dark bck mt-4">Kembali</button>
-    </NuxtLink>
   </div>
 </template>
 
 <script setup>
-const supabase = useSupabaseClient()
+const supabase = useSupabaseClient();
 
-const Visitors = ref({});
+const Semua = ref(0);
 
-const getpengunjung = async () => {
-  const { data, error } = await supabase.from("pengunjung").select(`*, keanggotaan(*), keperluan(*)`);
-  if (data) Visitors.value = data;
+const keyword = ref("");
+
+const visitors = ref([]);
+
+const getPengunjung = async () => {
+
+  const { data, error } = await supabase
+
+    .from("Pengunjung")
+
+    .select(`*, keanggotaan(nama), keperluan(nama)`)
+
+    .order("id", { ascending: false })
+
+    .ilike("nama", `%${keyword.value}%`);
+
+  if (data) visitors.value = data;
+
+};
+
+
+const getJumlah = async () => {
+
+  const { data, error } = await supabase
+
+    .from("jumlahpengunjung")
+
+    .select()
+
+    .single()
+
+  if (data) Semua.value = data.jumlahpengunjung
+
 };
 
 onMounted(() => {
-  getpengunjung();
-})
+
+  getPengunjung();
+
+  getJumlah();
+
+});
+
 </script>
